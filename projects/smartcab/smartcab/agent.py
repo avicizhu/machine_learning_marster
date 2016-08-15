@@ -1,4 +1,5 @@
 import random
+import numpy as np
 from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
@@ -8,8 +9,8 @@ from collections import defaultdict
 class LearningAgent(Agent):
     """An agent that learns to drive in the smartcab world."""
     Q = defaultdict(dict)
-    epsilon = 1
-    alpha = 1
+    epsilon = 1.0
+    alpha = 1.0
     penalty = 0
     def __init__(self, env):
         super(LearningAgent, self).__init__(env)  # sets self.env = env, state = None, next_waypoint = None, and a default color
@@ -21,6 +22,9 @@ class LearningAgent(Agent):
         self.shortest_path = 0
         self.init_deadline = 0
         LearningAgent.penalty = 0
+        LearningAgent.epsilon = 1
+        LearningAgent.alpha = 1
+        LearningAgent.Q = defaultdict(dict)
 
     def reset(self, destination=None):
         self.planner.route_to(destination)
@@ -82,7 +86,7 @@ class LearningAgent(Agent):
         if (deadline == 0) or (self.next_waypoint is None):
             time_used = float(self.init_deadline - deadline + 1)
             ratio = self.shortest_path / time_used if self.next_waypoint is None else 0
-            res.append((self.total_reward, 1 if self.next_waypoint is None else 0, LearningAgent.penalty, ratio))
+            res.append([self.total_reward, 1 if self.next_waypoint is None else 0, LearningAgent.penalty, ratio])
 
 
         #print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
@@ -105,6 +109,9 @@ def run():
 
 
 if __name__ == '__main__':
-    res = []
-    run()
-    print res
+    res_10 = []
+    for i in range(0,10):
+        res = []
+        run()
+        res_10.append( np.array(res) )
+    print (sum(res_10)/10).tolist()
